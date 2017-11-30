@@ -16,6 +16,9 @@ FROM laradock/workspace:1.9-70
 
 MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
 
+# Remove Faillog and Lastlog to reduce the size of the final image.
+RUN rm /var/log/lastlog /var/log/faillog
+
 #
 #--------------------------------------------------------------------------
 # Mandatory Software's Installation
@@ -80,6 +83,18 @@ RUN if [ ${INSTALL_LDAP} = true ]; then \
     apt-get update -yqq && \
     apt-get install -y libldap2-dev && \
     apt-get install -y php7.0-ldap \
+;fi
+
+#####################################
+# IMAP:
+#####################################
+
+ARG INSTALL_IMAP=false
+ENV INSTALL_IMAP ${INSTALL_IMAP}
+
+RUN if [ ${INSTALL_IMAP} = true ]; then \
+    apt-get update -yqq && \
+    apt-get install -y php7.0-imap \
 ;fi
 
 #####################################
