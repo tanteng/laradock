@@ -1,0 +1,10 @@
+diff a/docker-compose.yml b/docker-compose.yml	(rejected hunks)
+@@ -6,8 +6,6 @@
+ 
+     applications:
+       image: tianon/true
+-      volumes:
+-        - ${APPLICATION}:/var/www
+ 
+ ### Workspace Utilities Container ###########################
+ 
