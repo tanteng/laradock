@@ -12,7 +12,7 @@
 # Note: Base Image name format {image-tag}-{php-version}
 #
 
-FROM laradock/workspace:1.9-56
+FROM laradock/workspace:2.0-56
 
 MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
 
@@ -70,6 +70,19 @@ RUN if [ ${INSTALL_SOAP} = true ]; then \
   add-apt-repository -y ppa:ondrej/php && \
   apt-get update -yqq && \
   apt-get -y install libxml2-dev php5.6-soap \
+;fi
+
+#####################################
+# LDAP:
+#####################################
+
+ARG INSTALL_LDAP=false
+ENV INSTALL_LDAP ${INSTALL_LDAP}
+
+RUN if [ ${INSTALL_LDAP} = true ]; then \
+    apt-get update -yqq && \
+    apt-get install -y libldap2-dev && \
+    apt-get install -y php5.6-ldap \
 ;fi
 
 #####################################
@@ -342,7 +355,7 @@ COPY ./aerospike.ini /etc/php/5.6/cli/conf.d/aerospike.ini
 
 RUN if [ ${INSTALL_AEROSPIKE} = true ]; then \
     # Install the php aerospike extension
-    curl -L -o /tmp/aerospike-client-php.tar.gz "https://github.com/aerospike/aerospike-client-php/archive/3.4.14.tar.gz" \
+    curl -L -o /tmp/aerospike-client-php.tar.gz "https://github.com/aerospike/aerospike-client-php5/archive/3.4.15.tar.gz" \
     && mkdir -p aerospike-client-php \
     && tar -C aerospike-client-php -zxvf /tmp/aerospike-client-php.tar.gz --strip 1 \
     && ( \

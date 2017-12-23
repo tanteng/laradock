@@ -431,14 +431,34 @@ To learn more about how Docker publishes ports, please read [this excellent post
 
 
 
+<br>
+<a name="Use-Jenkins"></a>
+## Use Jenkins
+
+1) Boot the container `docker-compose up -d jenkins`. To enter the container type `docker-compose exec jenkins bash`.
+
+2) Go to `http://localhost:8090/` (if you didn't chanhed your default port mapping) 
+
+3) Authenticate from the web app.
+
+- Default username is `admin`.
+- Default password is `docker-compose exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword`. 
+
+(To enter container as root type `docker-compose exec --user root jenkins bash`).
+
+4) Install some plugins.
+
+5) Create your first Admin user, or continue as Admin.
+
+Note: to add user go to `http://localhost:8090/securityRealm/addUser` and to restart it from the web app visit `http://localhost:8090/restart`.
+
+You may wanna change the default security configuration, so go to `http://localhost:8090/configureSecurity/` under Authorization and choosing "Anyone can do anything" or "Project-based Matrix Authorization Strategy" or anything else.
+
+
+
 
 <br>
 <a name="Laravel"></a>
-
-
-
-
-
 
 <a name="Install-Laravel"></a>
 ## Install Laravel from a Docker Container
@@ -1002,7 +1022,7 @@ To install CodeIgniter 3 on Laradock all you have to do is the following simple 
 
 4 - Run `docker-compose restart` if the container was already running, before the step above.
 
-5 - Visit `symfony.dev`
+5 - Visit `symfony.test`
 
 <br>
 <a name="Misc"></a>
@@ -1071,9 +1091,6 @@ To change the default forwarded port for ssh:
 			- "2222:22" # Edit this line
     ...
 ```
-
-
-
 
 
 
@@ -1167,21 +1184,21 @@ If you need <a href="#MySQL-access-from-host">MySQL access from your host</a>, d
 <a name="Use-custom-Domain"></a>
 ## Use custom Domain (instead of the Docker IP)
 
-Assuming your custom domain is `laravel.dev`
+Assuming your custom domain is `laravel.test`
 
-1 - Open your `/etc/hosts` file and map your localhost address `127.0.0.1` to the `laravel.dev` domain, by adding the following:
+1 - Open your `/etc/hosts` file and map your localhost address `127.0.0.1` to the `laravel.test` domain, by adding the following:
 
 ```bash
-127.0.0.1    laravel.dev
+127.0.0.1    laravel.test
 ```
 
-2 - Open your browser and visit `{http://laravel.dev}`
+2 - Open your browser and visit `{http://laravel.test}`
 
 
 Optionally you can define the server name in the NGINX configuration file, like this:
 
 ```conf
-server_name laravel.dev;
+server_name laravel.test;
 ```
 
 
