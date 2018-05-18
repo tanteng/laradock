@@ -35,7 +35,7 @@ cp env-example .env
 3 - Run your containers:
 
 ```shell
-docker-compose up -d nginx mysql redis beanstalkd
+docker-compose up -d nginx mysql phpmyadmin redis workspace 
 ```
 
 4 - Open your project's `.env` file and set the following:
@@ -58,7 +58,7 @@ That's it! enjoy :)
 <a name="features"></a>
 ## Features
 
-- Easy switch between PHP versions: 7.1, 7.0, 5.6...
+- Easy switch between PHP versions: 7.2, 7.1, 5.6...
 - Choose your favorite database engine: MySQL, Postgres, MariaDB...
 - Run your own combination of software: Memcached, HHVM, Beanstalkd...
 - Every software runs on a separate container: PHP-FPM, NGINX, PHP-CLI...

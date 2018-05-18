@@ -12,9 +12,11 @@
 # Note: Base Image name format {image-tag}-{php-version}
 #
 
-FROM laradock/php-fpm:2.0-70
+ARG PHP_VERSION=${PHP_VERSION}
 
-MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
+FROM laradock/php-fpm:2.2-${PHP_VERSION}
+
+LABEL maintainer="Mahmoud Zalt <mahmoud@zalt.me>"
 
 #
 #--------------------------------------------------------------------------
@@ -38,11 +40,12 @@ MAINTAINER Mahmoud Zalt <mahmoud@zalt.me>
 #   - INSTALL_ZIP_ARCHIVE=true
 #
 
-#####################################
+###########################################################################
 # SOAP:
-#####################################
+###########################################################################
 
 ARG INSTALL_SOAP=false
+
 RUN if [ ${INSTALL_SOAP} = true ]; then \
     # Install the soap extension
     apt-get update -yqq && \
@@ -50,47 +53,52 @@ RUN if [ ${INSTALL_SOAP} = true ]; then \
     docker-php-ext-install soap \
 ;fi
 
-#####################################
+###########################################################################
 # pgsql
-#####################################
+###########################################################################
 
 ARG INSTALL_PGSQL=false
+
 RUN if [ ${INSTALL_PGSQL} = true ]; then \
     # Install the pgsql extension
-    apt-get update -yqq && \
     docker-php-ext-install pgsql \
 ;fi
 
-#####################################
+###########################################################################
 # pgsql client
-#####################################
+###########################################################################
 
 ARG INSTALL_PG_CLIENT=false
+
 RUN if [ ${INSTALL_PG_CLIENT} = true ]; then \
+    # Create folders if not exists (https://github.com/tianon/docker-brew-debian/issues/65)
+    mkdir -p /usr/share/man/man1 && \
+    mkdir -p /usr/share/man/man7 && \
     # Install the pgsql client
-    apt-get update -yqq && \
     apt-get install -y postgresql-client \
 ;fi
 
-#####################################
+###########################################################################
 # xDebug:
-#####################################
+###########################################################################
 
 ARG INSTALL_XDEBUG=false
+
 RUN if [ ${INSTALL_XDEBUG} = true ]; then \
     # Install the xdebug extension
     pecl install xdebug && \
     docker-php-ext-enable xdebug \
 ;fi
 
-# Copy xdebug configration for remote debugging
+# Copy xdebug configuration for remote debugging
 COPY ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
 
-#####################################
+###########################################################################
 # Blackfire:
-#####################################
+###########################################################################
 
 ARG INSTALL_BLACKFIRE=false
+
 RUN if [ ${INSTALL_XDEBUG} = false -a ${INSTALL_BLACKFIRE} = true ]; then \
     version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
     && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/$version \
@@ -99,11 +107,12 @@ RUN if [ ${INSTALL_XDEBUG} = false -a ${INSTALL_BLACKFIRE} = true ]; then \
     && printf "extension=blackfire.so\nblackfire.agent_socket=tcp://blackfire:8707\n" > $PHP_INI_DIR/conf.d/blackfire.ini \
 ;fi
 
-#####################################
-# PHP REDIS EXTENSION FOR PHP 7
-#####################################
+###########################################################################
+# PHP REDIS EXTENSION
+###########################################################################
 
 ARG INSTALL_PHPREDIS=false
+
 RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
     # Install Php Redis Extension
     printf "\n" | pecl install -o -f redis \
@@ -111,78 +120,83 @@ RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
     &&  docker-php-ext-enable redis \
 ;fi
 
-#####################################
-# Swoole EXTENSION FOR PHP 7
-#####################################
+###########################################################################
+# Swoole EXTENSION
+###########################################################################
 
 ARG INSTALL_SWOOLE=false
+
 RUN if [ ${INSTALL_SWOOLE} = true ]; then \
     # Install Php Swoole Extension
     pecl install swoole \
     &&  docker-php-ext-enable swoole \
 ;fi
 
-#####################################
+###########################################################################
 # MongoDB:
-#####################################
+###########################################################################
 
 ARG INSTALL_MONGO=false
+
 RUN if [ ${INSTALL_MONGO} = true ]; then \
     # Install the mongodb extension
     pecl install mongodb && \
     docker-php-ext-enable mongodb \
 ;fi
 
-#####################################
+###########################################################################
 # AMQP:
-#####################################
+###########################################################################
 
 ARG INSTALL_AMQP=false
+
 RUN if [ ${INSTALL_AMQP} = true ]; then \
-    apt-get update && \
     apt-get install librabbitmq-dev -y && \
     # Install the amqp extension
     pecl install amqp && \
     docker-php-ext-enable amqp \
 ;fi
 
-#####################################
+###########################################################################
 # ZipArchive:
-#####################################
+###########################################################################
 
 ARG INSTALL_ZIP_ARCHIVE=false
+
 RUN if [ ${INSTALL_ZIP_ARCHIVE} = true ]; then \
     # Install the zip extension
     docker-php-ext-install zip \
 ;fi
 
-#####################################
+###########################################################################
 # bcmath:
-#####################################
+###########################################################################
 
 ARG INSTALL_BCMATH=false
+
 RUN if [ ${INSTALL_BCMATH} = true ]; then \
     # Install the bcmath extension
     docker-php-ext-install bcmath \
 ;fi
 
-#####################################
+###########################################################################
 # GMP (GNU Multiple Precision):
-#####################################
+###########################################################################
 
 ARG INSTALL_GMP=false
+
 RUN if [ ${INSTALL_GMP} = true ]; then \
     # Install the GMP extension
-	apt-get update -yqq && \
-	apt-get install -y libgmp-dev && \ 
+	apt-get install -y libgmp-dev && \
     docker-php-ext-install gmp \
 ;fi
 
-#####################################
+###########################################################################
 # PHP Memcached:
-#####################################
+###########################################################################
 
 ARG INSTALL_MEMCACHED=false
+
 RUN if [ ${INSTALL_MEMCACHED} = true ]; then \
     # Install the php memcached extension
     curl -L -o /tmp/memcached.tar.gz "https://github.com/php-memcached-dev/php-memcached/archive/php7.tar.gz" \
@@ -200,27 +214,30 @@ RUN if [ ${INSTALL_MEMCACHED} = true ]; then \
     && docker-php-ext-enable memcached \
 ;fi
 
-#####################################
+###########################################################################
 # Exif:
-#####################################
+###########################################################################
 
 ARG INSTALL_EXIF=false
+
 RUN if [ ${INSTALL_EXIF} = true ]; then \
     # Enable Exif PHP extentions requirements
     docker-php-ext-install exif \
 ;fi
 
-#####################################
+###########################################################################
 # PHP Aerospike:
-#####################################
+###########################################################################
+
+USER root
 
 ARG INSTALL_AEROSPIKE=false
-ENV INSTALL_AEROSPIKE ${INSTALL_AEROSPIKE}
-# Copy aerospike configration for remote debugging
-COPY ./aerospike.ini /usr/local/etc/php/conf.d/aerospike.ini
+
 RUN if [ ${INSTALL_AEROSPIKE} = true ]; then \
+    # Fix dependencies for PHPUnit within aerospike extension
+    apt-get -y install sudo wget && \
     # Install the php aerospike extension
-    curl -L -o /tmp/aerospike-client-php.tar.gz "https://github.com/aerospike/aerospike-client-php/archive/master.tar.gz" \
+    curl -L -o /tmp/aerospike-client-php.tar.gz ${AEROSPIKE_PHP_REPOSITORY} \
     && mkdir -p aerospike-client-php \
     && tar -C aerospike-client-php -zxvf /tmp/aerospike-client-php.tar.gz --strip 1 \
     && ( \
@@ -233,11 +250,12 @@ RUN if [ ${INSTALL_AEROSPIKE} = true ]; then \
     && docker-php-ext-enable aerospike \
 ;fi
 
-#####################################
+###########################################################################
 # Opcache:
-#####################################
+###########################################################################
 
 ARG INSTALL_OPCACHE=false
+
 RUN if [ ${INSTALL_OPCACHE} = true ]; then \
     docker-php-ext-install opcache \
 ;fi
@@ -245,29 +263,32 @@ RUN if [ ${INSTALL_OPCACHE} = true ]; then \
 # Copy opcache configration
 COPY ./opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
-#####################################
+###########################################################################
 # Mysqli Modifications:
-#####################################
+###########################################################################
 
 ARG INSTALL_MYSQLI=false
+
 RUN if [ ${INSTALL_MYSQLI} = true ]; then \
     docker-php-ext-install mysqli \
 ;fi
 
-#####################################
+###########################################################################
 # Tokenizer Modifications:
-#####################################
+###########################################################################
 
 ARG INSTALL_TOKENIZER=false
+
 RUN if [ ${INSTALL_TOKENIZER} = true ]; then \
     docker-php-ext-install tokenizer \
 ;fi
 
-#####################################
+###########################################################################
 # Human Language and Character Encoding Support:
-#####################################
+###########################################################################
 
 ARG INSTALL_INTL=false
+
 RUN if [ ${INSTALL_INTL} = true ]; then \
     # Install intl and requirements
     apt-get update -yqq && \
@@ -276,82 +297,104 @@ RUN if [ ${INSTALL_INTL} = true ]; then \
     docker-php-ext-install intl \
 ;fi
 
-#####################################
+###########################################################################
 # GHOSTSCRIPT:
-#####################################
+###########################################################################
 
 ARG INSTALL_GHOSTSCRIPT=false
+
 RUN if [ ${INSTALL_GHOSTSCRIPT} = true ]; then \
     # Install the ghostscript extension
     # for PDF editing
-    apt-get update -yqq \
-    && apt-get install -y \
+    apt-get install -y \
     poppler-utils \
     ghostscript \
 ;fi
 
-#####################################
+###########################################################################
 # LDAP:
-#####################################
+###########################################################################
 
 ARG INSTALL_LDAP=false
+
 RUN if [ ${INSTALL_LDAP} = true ]; then \
-    apt-get update -yqq && \
     apt-get install -y libldap2-dev && \
     docker-php-ext-configure ldap --with-libdir=lib/x86_64-linux-gnu/ && \
     docker-php-ext-install ldap \
 ;fi
 
-#####################################
+###########################################################################
 # SQL SERVER:
-#####################################
+###########################################################################
 
 ARG INSTALL_MSSQL=false
-ENV INSTALL_MSSQL ${INSTALL_MSSQL}
-RUN if [ ${INSTALL_MSSQL} = true ]; then \
-    #####################################
+
+RUN set -eux; if [ ${INSTALL_MSSQL} = true ]; then \
+    ###########################################################################
     # Ref from https://github.com/Microsoft/msphpsql/wiki/Dockerfile-for-adding-pdo_sqlsrv-and-sqlsrv-to-official-php-image
-    #####################################
+    ###########################################################################
     # Add Microsoft repo for Microsoft ODBC Driver 13 for Linux
-    apt-get update -yqq \
-        && apt-get install -y apt-transport-https \
-        && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
-        && curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list \
-        && apt-get update -yqq \
-
+    apt-get install -y apt-transport-https gnupg \
+    && curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/8/prod.list > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update -yqq \
     # Install Dependencies
-        && ACCEPT_EULA=Y apt-get install -y unixodbc unixodbc-dev libgss3 odbcinst msodbcsql locales \
-        && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
-        && locale-gen \
-
+    && ACCEPT_EULA=Y apt-get install -y unixodbc unixodbc-dev libgss3 odbcinst msodbcsql locales \
+    && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen \
     # Install pdo_sqlsrv and sqlsrv from PECL. Replace pdo_sqlsrv-4.1.8preview with preferred version.
-        && pecl install pdo_sqlsrv-4.1.8preview sqlsrv-4.1.8preview \
-        && docker-php-ext-enable pdo_sqlsrv sqlsrv \
+    && pecl install pdo_sqlsrv-4.1.8preview sqlsrv-4.1.8preview \
+    && docker-php-ext-enable pdo_sqlsrv sqlsrv \
+    && php -m | grep -q 'pdo_sqlsrv' \
+    && php -m | grep -q 'sqlsrv' \
 ;fi
 
-#####################################
+###########################################################################
 # Image optimizers:
-#####################################
+###########################################################################
+
 USER root
+
 ARG INSTALL_IMAGE_OPTIMIZERS=false
-ENV INSTALL_IMAGE_OPTIMIZERS ${INSTALL_IMAGE_OPTIMIZERS}
+
 RUN if [ ${INSTALL_IMAGE_OPTIMIZERS} = true ]; then \
-    apt-get update -yqq && \
     apt-get install -y --force-yes jpegoptim optipng pngquant gifsicle \
 ;fi
 
-#####################################
+###########################################################################
 # ImageMagick:
-#####################################
+###########################################################################
+
 USER root
+
 ARG INSTALL_IMAGEMAGICK=false
-ENV INSTALL_IMAGEMAGICK ${INSTALL_IMAGEMAGICK}
+
 RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
-    apt-get update -y && \
-    apt-get install -y libmagickwand-dev imagemagick && \ 
+    apt-get install -y libmagickwand-dev imagemagick && \
     pecl install imagick && \
     docker-php-ext-enable imagick \
 ;fi
+
+###########################################################################
+# IMAP:
+###########################################################################
+
+ARG INSTALL_IMAP=false
+
+RUN if [ ${INSTALL_IMAP} = true ]; then \
+    apt-get install -y libc-client-dev libkrb5-dev && \
+    rm -r /var/lib/apt/lists/* && \
+    docker-php-ext-configure imap --with-kerberos --with-imap-ssl && \
+    docker-php-ext-install imap \
+;fi
+
+###########################################################################
+# Check PHP version:
+###########################################################################
+
+ARG PHP_VERSION=${PHP_VERSION}
+
+RUN php -v | head -n 1 | grep -q "PHP ${PHP_VERSION}."
 
 #
 #--------------------------------------------------------------------------
@@ -359,10 +402,15 @@ RUN if [ ${INSTALL_IMAGEMAGICK} = true ]; then \
 #--------------------------------------------------------------------------
 #
 
-ADD ./laravel.ini /usr/local/etc/php/conf.d/
-ADD ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
+COPY ./laravel.ini /usr/local/etc/php/conf.d
+COPY ./xlaravel.pool.conf /usr/local/etc/php-fpm.d/
 
-#RUN rm -r /var/lib/apt/lists/*
+USER root
+
+# Clean up
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
+    rm /var/log/lastlog /var/log/faillog
 
 RUN usermod -u 1000 www-data
 
